@@ -1,17 +1,17 @@
 <nav class="bg-white fixed top-0 w-full shadow-md z-50">
     <div class="container mx-auto px-6 py-3 flex items-center justify-between">
-        <!-- Logo -->
-        <a href="{{ route('login.page') }}" class="text-2xl font-bold text-pink-600">
+        
+         <a href="{{ route('login.page') }}" class="text-3xl font-extrabold text-teal-600 tracking-wide hover:text-teal-700 transition">
             Aurora Florist
         </a>
 
 
         <!-- Menu Desktop -->
         <div class="hidden md:flex space-x-6">
-            <a href="{{ url('/') }}" class="text-gray-700 hover:text-pink-600">Home</a>
-            <a href="#about" class="text-gray-700 hover:text-pink-600">About</a>
-            <a href="#produk" class="text-gray-700 hover:text-pink-600">Produk</a>
-            <a href="#contact" class="text-gray-700 hover:text-pink-600">Contact</a>
+            <a href="{{ url('/') }}" class="text-gray-700 hover:text-teal-600">Home</a>
+            <a href="#about" class="text-gray-700 hover:text-teal-600">About</a>
+            <a href="#produk" class="text-gray-700 hover:text-teal-600">Produk</a>
+            <a href="#contact" class="text-gray-700 hover:text-teal-600">Contact</a>
         </div>
 
         <!-- Tombol menu mobile -->
