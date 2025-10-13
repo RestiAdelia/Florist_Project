@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\KategoriController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +24,15 @@ Route::get('/login-page', function () {
 Route::get('/dashboard', function () {
     return view('dashboard'); // gunakan x-app-layout
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware(['auth'])->group(function () {
+   
+    Route::resource('produk', ProductController::class);
+});
+Route::middleware(['auth'])->group(function () {
+   
+    Route::resource('kategori', KategoriController::class);
+});
 
 // Profile routes (Breeze)
 Route::middleware('auth')->group(function () {
