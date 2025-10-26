@@ -1,23 +1,39 @@
 <x-app-layout>
     <x-slot:title> Kategori </x-slot:title>
 
-    <div class="py-6 sm:py-8">
+    <div class="py-6 sm:py-8 bg-gray-100">
         <div class="max-w-6xl mx-auto px-4 sm:px-5">
-
-            {{-- Notifikasi sukses --}}
-            @if (session('success'))
-                <div
-                    class="bg-green-100 border border-green-300 text-green-800 px-3 py-1.5 rounded-md mb-3 text-sm flex items-center gap-2">
-                    <i class="bi bi-check-circle-fill text-green-600 text-base"></i>
-                    <span>{{ session('success') }}</span>
+           @if (session('success'))
+                <div x-data="{ openAlert: false }" x-init="setTimeout(() => openAlert = true, 200)" x-show="openAlert" x-cloak
+                    class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50"
+                    x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-90"
+                    x-transition:enter-end="opacity-100 scale-100" @click.self="openAlert = false">
+                    <div class="relative p-5 border w-96 shadow-lg rounded-md bg-white">
+                        <div class="text-center">
+                            <div class="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-green-100">
+                                <svg class="h-16 w-16 text-green-600" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl leading-6 font-medium text-gray-900 mt-5">
+                                {{ session('success') }}
+                            </h3>
+                            <div class="items-center px-4 py-3 mt-4">
+                                <button @click="openAlert = false"
+                                    class="px-6 py-2 bg-teal-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
+                                    OK
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             @endif
 
             <div class="bg-white shadow-lg rounded-lg border border-gray-200 p-4 sm:p-5">
-                {{-- Form Tambah --}}
                 <div class="mb-6">
                     <h2 class="text-lg font-semibold text-gray-700 mb-3">Tambah Kategori</h2>
-
                     <form action="{{ route('kategori.store') }}" method="POST"
                         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 items-end">
                         @csrf
@@ -28,7 +44,6 @@
                                 class="w-full border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500 text-sm"
                                 required>
                         </div>
-
                         <div>
                             <label for="deskripsi"
                                 class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
@@ -45,7 +60,28 @@
                     </form>
                 </div>
 
-                {{-- Tabel Kategori --}}
+                {{-- Form Pencarian --}}
+                <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <form action="{{ route('kategori.index') }}" method="GET"
+                        class="flex items-center gap-2 w-full sm:w-auto">
+                        <input type="text" name="search" value="{{ request('search') }}"
+                            placeholder="Cari kategori..."
+                            class="border border-gray-300 rounded-md px-3 py-2 text-sm w-full sm:w-64 focus:ring-teal-500 focus:border-teal-500">
+                        <button type="submit"
+                            class="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 text-sm font-medium flex items-center gap-1">
+                            <i class="bi bi-search"></i> Cari
+                        </button>
+                    </form>
+
+                    {{-- Tombol reset jika pencarian aktif --}}
+                    @if (request('search'))
+                        <a href="{{ route('kategori.index') }}"
+                            class="text-sm text-gray-600 hover:text-teal-700 flex items-center gap-1">
+                            <i class="bi bi-x-circle"></i> Reset
+                        </a>
+                    @endif
+                </div>
+
                 <div class="overflow-x-auto overflow-y-auto max-h-[450px] rounded-md border border-gray-200">
                     <table class="min-w-full text-[15px] text-gray-700 border-collapse">
                         <thead class="bg-gradient-to-r from-teal-600 to-emerald-600 text-white sticky top-0 z-10">
