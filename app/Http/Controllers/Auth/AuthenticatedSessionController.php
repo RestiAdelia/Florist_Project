@@ -27,10 +27,25 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
         $request->session()->regenerate();
 
-        // Ini penting agar redirect ke dashboard Breeze
-        return redirect()->intended(route('dashboard'));
+        $user = Auth::user(); // pakai Facade
+
+        if ($user->role === 'admin') {
+            return redirect()->route('dashboard');
+        }
+        return redirect()->route('user.dashboard');
+    }
+  public function adminDashboard()
+    {
+        return view('dashboard'); 
     }
 
+    /**
+     * User dashboard
+     */
+    public function userDashboard()
+    {
+        return view('user.dashboard'); 
+    }
 
     /**
      * Destroy an authenticated session.
