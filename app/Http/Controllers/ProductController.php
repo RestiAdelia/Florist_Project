@@ -90,7 +90,7 @@ class ProductController extends Controller
 
         return redirect()->route('produk.index')->with('success', 'Produk berhasil diperbarui!');
     }
-  public function show($id)
+    public function show($id)
     {
         // Ambil data produk beserta relasi kategori
         $produk = Product::with('category')->findOrFail($id);
@@ -98,18 +98,18 @@ class ProductController extends Controller
         // Jika ingin halaman khusus untuk detail produk:
         return view('produk.show', compact('produk'));
     }
-   public function katalog(Request $request)
-{
-     $kategoriId = $request->query('kategori'); // ambil dari query string ?kategori=1
-    
-    $categories = Category::all();
+    public function katalog(Request $request)
+    {
+        $kategoriId = $request->query('kategori'); // ambil dari query string ?kategori=1
 
-    $products = Product::when($kategoriId, function($query, $kategoriId) {
-        return $query->where('category_id', $kategoriId);
-    })->get();
+        $categories = Category::all();
 
-    return view('user.shop', compact('products', 'categories', 'kategoriId'));
-}
+        $products = Product::when($kategoriId, function ($query, $kategoriId) {
+            return $query->where('category_id', $kategoriId);
+        })->get();
+
+        return view('user.shop', compact('products', 'categories', 'kategoriId'));
+    }
 
 
     public function destroy(Product $produk)

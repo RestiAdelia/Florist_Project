@@ -25,7 +25,7 @@ public function filterProduk(Request $request)
         $query->where('category_id', $categoryId);
     }
 
-    $products = $query->paginate(6); // atau sesuai jumlah per page
+    $products = $query->paginate(8); // atau sesuai jumlah per page
 
     // kalau request dari AJAX, kirim partial view saja
     if ($request->ajax()) {

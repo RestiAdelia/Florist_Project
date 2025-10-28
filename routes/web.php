@@ -32,7 +32,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('produk', ProductController::class);
      Route::resource('kategori', KategoriController::class);
 });
-
+Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.show');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/user/dashboard', [AuthenticatedSessionController::class, 'userDashboard'])

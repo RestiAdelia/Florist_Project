@@ -1,8 +1,11 @@
 <nav class="bg-white fixed top-0 w-full shadow-md z-50">
-    <div class="container mx-auto px-6 py-3 flex items-center justify-between">
-        <!-- Logo -->
-        <a href="#" class="text-3xl font-extrabold text-teal-600 tracking-wide hover:text-teal-700 transition">
-            Aurora Florist
+     <div class="max-w-7xl mx-auto px-8 py-3 flex items-center justify-between">
+        <!-- Logo + Nama -->
+        <a href="{{ url('/') }}" class="flex items-center space-x-3">
+            <img src="{{ asset('images/logoAF.png') }}" alt="Logo" class="h-10 w-10 object-contain">
+            <span class="text-2xl font-extrabold text-teal-600 tracking-wide hover:text-teal-700 transition">
+                Aurora Florist
+            </span>
         </a>
 
         <div class="hidden md:flex items-center space-x-6">

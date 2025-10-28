@@ -5,6 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Aurora Florist</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
         integrity="sha512-K5m1lB7sRMHCOEpU9A0OYZdCv2r0lWkD+Ivo0jzvS/6j2MqjzXbQb6HDFzXZbxdcoyRmAwfKwvFJ6W4KeRBf0A=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -23,7 +26,7 @@
     <main class="pt-20 flex-grow">
         @yield('content')
     </main>
-    <footer class="bg-teal-700 text-white py-10" id="contact"   >
+    <footer class="bg-teal-700 text-white py-10" id="contact">
         <div class="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-10">
             <div>
                 <h1 class="text-4xl font-extrabold" style="color:#B8860B;">

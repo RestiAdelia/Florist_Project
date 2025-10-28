@@ -1,6 +1,5 @@
 <x-app-layout>
     <x-slot:title>Tambah Produk</x-slot:title>
-
     <div class="flex justify-center py-8 px-4 sm:px-6 lg:px-8 min-h-screen bg-gray-100">
         <div class="w-full max-w-6xl h-full max-h-screen overflow-y-auto p-2 sm:p-4">
             <form action="{{ route('produk.store') }}" method="POST" enctype="multipart/form-data"

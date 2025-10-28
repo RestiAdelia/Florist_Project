@@ -1,6 +1,5 @@
 <nav class="bg-white fixed top-0 w-full shadow-md z-50">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        <!-- Logo kiri -->
         <div class="flex items-center space-x-2 flex-shrink-0">
             <img src="{{ asset('images/logo.png') }}" alt="Icon" class="h-8 w-8">
             <div>
@@ -8,7 +7,6 @@
                 <span class="block text-xs text-gray-500 hidden sm:inline">ADV & Florist</span>
             </div>
         </div>
-        <!-- Search bar tengah -->
         <div class="hidden md:flex flex-1 justify-center px-4">
             <div class="relative w-full max-w-xl">
                 <input type="text" placeholder="Search for flowers..."
@@ -40,13 +38,11 @@
                         <i class="bi bi-truck text-xl"></i>
                         <span>Pesanan</span>
                     </a>
-                    <a href="{{ url('keranjang') }}"
-                        class="text-gray-700 hover:text-teal-600 flex flex-col items-center text-xs" title="Keranjang">
-                        <i class="bi bi-cart text-xl"></i>
-                        <span>Keranjang</span>
+                    <a href="{{ url('wishlist') }}"
+                        class="text-gray-500 hover:text-teal-600 flex flex-col items-center text-xs">
+                        <i class="bi bi-heart text-xl"></i>
+                        <span>Wishlist</span>
                     </a>
-
-                    <!-- Profile dropdown -->
                     <div x-data="{ open: false }" class="relative">
                         <button @click="open = !open" class="flex items-center space-x-2 focus:outline-none">
                             <img src="{{ Auth::user()->profile_photo_url ?? 'https://via.placeholder.com/28' }}"
@@ -63,7 +59,6 @@
                             x-transition:leave-start="transform opacity-100 scale-100"
                             x-transition:leave-end="transform opacity-0 scale-95"
                             class="absolute right-0 mt-2 w-44 bg-white rounded-md shadow-lg border py-1 z-50">
-                            <div class="border-t border-gray-100"></div>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit"
@@ -76,8 +71,6 @@
                 @endif
             @endauth
         </div>
-
-        <!-- Mobile menu right -->
         <div class="md:hidden flex items-center space-x-4 flex-shrink-0">
             <button id="mobile-search-btn" class="text-gray-700 focus:outline-none">
                 <i class="bi bi-search text-xl"></i>
@@ -121,15 +114,14 @@
                     <i class="bi bi-house text-xl"></i>
                     <span>Home</span>
                 </a>
-                <a href="{{ url('shop') }}"
-                    class="text-gray-500 hover:text-teal-600 flex flex-col items-center text-xs">
+                <a href="{{ url('shop') }}" class="text-gray-500 hover:text-teal-600 flex flex-col items-center text-xs">
                     <i class="bi bi-shop text-xl"></i>
                     <span>Shop</span>
                 </a>
-                <a href="{{ url('keranjang') }}"
+                <a href="{{ url('wishlist') }}"
                     class="text-gray-500 hover:text-teal-600 flex flex-col items-center text-xs">
-                    <i class="bi bi-cart text-xl"></i>
-                    <span>Keranjang</span>
+                    <i class="bi bi-heart text-xl"></i>
+                    <span>Wishlist</span>
                 </a>
                 <a href="{{ url('pesanan') }}"
                     class="text-gray-500 hover:text-teal-600 flex flex-col items-center text-xs">
@@ -145,6 +137,7 @@
         @endauth
     </div>
 </div>
+
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
