@@ -45,10 +45,16 @@
                         Kategori
                     </span>
                 </a>
-                <a href="" class="flex items-center gap-3 py-3 px-2 hover:bg-white/20 rounded transition-colors">
+                <a href="{{route ('admin.orders.index')}}" class="flex items-center gap-3 py-3 px-2 hover:bg-white/20 rounded transition-colors">
                     <i class="bi bi-receipt-cutoff w-8 text-center text-xl"></i>
                     <span class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
                         Pesanan
+                    </span>
+                </a>
+                  <a href="{{route ('admin.konfirmasi.index')}}" class="flex items-center gap-3 py-3 px-2 hover:bg-white/20 rounded transition-colors">
+                      <i class="fa-solid fa-check-circle"></i>
+                    <span class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+                       Konfirmasi & Status
                     </span>
                 </a>
                 <a href="" class="flex items-center gap-3 py-3 px-2 hover:bg-white/20 rounded transition-colors">

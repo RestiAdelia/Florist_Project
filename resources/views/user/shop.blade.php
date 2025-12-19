@@ -44,10 +44,7 @@
                             </span>
                         @endif
 
-                        <button title="Tambah ke Wishlist"
-                            class="absolute top-2 right-2 p-2 bg-white/80 rounded-full text-gray-600 hover:text-red-500 transition-opacity opacity-100 md:opacity-0 group-hover:opacity-100">
-                            <i class="bi bi-heart text-lg"></i>
-                        </button>
+                       
                     </div>
 
                     {{-- Informasi produk --}}
@@ -64,7 +61,7 @@
                             </span>
                             {{-- {{ route('order.create', ['id' => $product->id]) }}" --}}
                             @if ($product->stok === 'tersedia')
-                                <a href="{{ '#' }}"
+                                <a href="{{route('orders.create', ['product_id' => $product->id])}}"
                                     class="text-white font-semibold px-3 py-1.5 rounded-lg transition-colors duration-200 flex items-center space-x-2 bg-teal-600 hover:bg-teal-700"
                                     title="Pesan Produk Ini">
                                     <i class="bi bi-bag-check"></i>
