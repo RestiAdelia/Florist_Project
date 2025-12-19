@@ -33,16 +33,12 @@
                         <i class="bi bi-shop text-xl"></i>
                         <span>Shop</span>
                     </a>
-                    <a href="{{ url('pesanan') }}"
+                    <a href="{{ route('orders.index') }}"
                         class="text-gray-700 hover:text-teal-600 flex flex-col items-center text-xs" title="Pesanan">
                         <i class="bi bi-truck text-xl"></i>
                         <span>Pesanan</span>
                     </a>
-                    <a href="{{ url('wishlist') }}"
-                        class="text-gray-500 hover:text-teal-600 flex flex-col items-center text-xs">
-                        <i class="bi bi-heart text-xl"></i>
-                        <span>Wishlist</span>
-                    </a>
+
                     <div x-data="{ open: false }" class="relative">
                         <button @click="open = !open" class="flex items-center space-x-2 focus:outline-none">
                             <img src="{{ Auth::user()->profile_photo_url ?? 'https://via.placeholder.com/28' }}"
@@ -51,14 +47,18 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
-                        <div x-show="open" @click.outside="open = false"
-                            x-transition:enter="transition ease-out duration-100"
-                            x-transition:enter-start="transform opacity-0 scale-95"
-                            x-transition:enter-end="transform opacity-100 scale-100"
-                            x-transition:leave="transition ease-in duration-75"
-                            x-transition:leave-start="transform opacity-100 scale-100"
-                            x-transition:leave-end="transform opacity-0 scale-95"
+
+                        <div x-show="open" @click.outside="open = false" x-transition
                             class="absolute right-0 mt-2 w-44 bg-white rounded-md shadow-lg border py-1 z-50">
+
+                            <!-- LIHAT PROFILE -->
+                            <a href="" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="bi bi-person-circle mr-2"></i> Lihat Profile
+                            </a>
+
+                            <div class="border-t my-1"></div>
+
+                            <!-- LOGOUT -->
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit"
@@ -71,36 +71,7 @@
                 @endif
             @endauth
         </div>
-        <div class="md:hidden flex items-center space-x-4 flex-shrink-0">
-            <button id="mobile-search-btn" class="text-gray-700 focus:outline-none">
-                <i class="bi bi-search text-xl"></i>
-            </button>
-            @auth
-                <div x-data="{ open: false }" class="relative">
-                    <button @click="open = !open" class="focus:outline-none">
-                        <img src="{{ Auth::user()->profile_photo_url ?? 'https://via.placeholder.com/28' }}" alt="Profile"
-                            class="w-7 h-7 rounded-full border border-gray-300">
-                    </button>
-                    <div x-show="open" @click.outside="open = false" x-transition:enter="transition ease-out duration-100"
-                        x-transition:enter-start="transform opacity-0 scale-95"
-                        x-transition:enter-end="transform opacity-100 scale-100"
-                        x-transition:leave="transition ease-in duration-75"
-                        x-transition:leave-start="transform opacity-100 scale-100"
-                        x-transition:leave-end="transform opacity-0 scale-95"
-                        class="absolute right-0 mt-2 w-44 bg-white rounded-md shadow-lg border py-1 z-50">
-                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil</a>
-                        <div class="border-t border-gray-100"></div>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit"
-                                class="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700">
-                                <i class="bi bi-box-arrow-right mr-2"></i> Logout
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            @endauth
-        </div>
+       
     </div>
 </nav>
 
@@ -118,18 +89,15 @@
                     <i class="bi bi-shop text-xl"></i>
                     <span>Shop</span>
                 </a>
-                <a href="{{ url('wishlist') }}"
-                    class="text-gray-500 hover:text-teal-600 flex flex-col items-center text-xs">
-                    <i class="bi bi-heart text-xl"></i>
-                    <span>Wishlist</span>
-                </a>
+
+
                 <a href="{{ url('pesanan') }}"
                     class="text-gray-500 hover:text-teal-600 flex flex-col items-center text-xs">
                     <i class="bi bi-truck text-xl"></i>
                     <span>Pesanan</span>
                 </a>
-                <a href="{{ url('profile') }}"
-                    class="text-gray-500 hover:text-teal-600 flex flex-col items-center text-xs">
+                {{-- {{ url('profileUser') }} --}}
+                <a href="" class="text-gray-500 hover:text-teal-600 flex flex-col items-center text-xs">
                     <i class="bi bi-speedometer2 text-xl"></i>
                     <span>Akun</span>
                 </a>
