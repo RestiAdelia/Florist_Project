@@ -7,10 +7,11 @@
                     <p class="text-xs text-gray-500 font-medium mt-1">Pantau performa bisnis Aurora Florist Anda.</p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button
+                    <a href="{{ route('admin.laporan.pdf', ['start_date' => $startDate, 'end_date' => $endDate]) }}"
+                        target="_blank"
                         class="flex items-center px-3 py-2 bg-teal-600 text-white rounded-xl font-medium text-[11px] hover:bg-teal-700 transition-all shadow-md shadow-teal-100">
                         <i class="bi bi-printer mr-1.5 text-sm"></i> Cetak PDF
-                    </button>
+                    </a>
                 </div>
             </div>
 
@@ -163,6 +164,3 @@
         }
     </style>
 </x-app-layout>
-
-
-
