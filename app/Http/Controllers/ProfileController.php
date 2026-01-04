@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
-use App\Http\Requests\PasswordUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,12 +13,34 @@ use Illuminate\View\View;
 class ProfileController extends Controller
 {
     /**
-     * Form profile
+     * Tampilkan halaman detail profil (Read Only)
+     */
+    public function show(Request $request): View
+    {
+        $user = $request->user();
+
+        // Contoh pengecekan role jika ingin membedakan data yang dikirim
+        if ($user->role === 'admin') {
+            // Logika tambahan khusus admin (jika ada)
+            // misal: $data = AdminLog::latest()->get();
+        }
+
+        return view('profile.show', [
+            'user' => $user,
+        ]);
+    }
+
+    /**
+     * Tampilkan form edit profile
      */
     public function edit(Request $request): View
     {
+        // Cek role untuk memastikan admin/user mendapatkan view yang benar 
+        // (meskipun layout sudah diatur di blade, ini untuk jaga-jaga)
+        $user = $request->user();
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
         ]);
     }
 
@@ -28,19 +49,27 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $user->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
 
-        return Redirect::route('profile.edit')
-            ->with('status', 'profile-updated');
+        // Cek role untuk menentukan arah redirect setelah sukses
+        if ($user->role === 'admin') {
+            return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        }
+
+        return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
-    public function updatePassword(Request $request)
+    /**
+     * Update Password
+     */
+    public function updatePassword(Request $request): RedirectResponse
     {
         $request->validate([
             'current_password' => ['required', 'current_password'],
@@ -51,6 +80,11 @@ class ProfileController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        return back()->with('status', 'password-updated');
+        // Cek role jika ingin memberikan pesan sukses yang berbeda
+        $message = $request->user()->role === 'admin' 
+            ? 'Password Administrator berhasil diperbarui!' 
+            : 'Password Anda berhasil diperbarui!';
+
+        return back()->with('status', 'password-updated')->with('message', $message);
     }
 }

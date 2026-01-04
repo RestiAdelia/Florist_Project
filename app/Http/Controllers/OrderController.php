@@ -23,45 +23,61 @@ class OrderController extends Controller
     /**
      * Daftar pesanan user login
      */
+  
     public function index(Request $request)
-    {
-        $userId = Auth::id();
-        $allOrders = Order::where('user_id', $userId);
-        $statusMap = [
-            'menunggu_pembayaran' => ['field' => 'status_pembayaran', 'value' => 'menunggu_pembayaran'],
-            'dibayar'             => ['field' => 'status_pesanan', 'value' => 'menunggu_konfirmasi'],
-            'diproses'            => ['field' => 'status_pesanan', 'value' => 'diproses'],
-            'selesai'             => ['field' => 'status_pesanan', 'value' => 'selesai'],
-            'dibatalkan'          => ['field' => 'status_pembayaran', 'value' => 'dibatalkan'],
-        ];
+{
+    $userId = Auth::id();
+    
+    // Gunakan nama variabel 'filter' atau 'status' agar tidak bingung dengan nama kolom DB
+    $currentStatus = $request->get('status', 'All'); 
 
-        $statusCounts = [
-            'All' => $allOrders->count(),
-            'menunggu_pembayaran' => (clone $allOrders)->where('status_pembayaran', 'menunggu_pembayaran')->count(),
-            'dibayar' => (clone $allOrders)->where('status_pesanan', 'menunggu_konfirmasi')->count(),
-            'diproses' => (clone $allOrders)->where('status_pesanan', 'diproses')->count(),
-            'selesai' => (clone $allOrders)->where('status_pesanan', 'selesai')->count(),
-            'dibatalkan' => (clone $allOrders)->where('status_pembayaran', 'dibatalkan')->count(),
-        ];
+    // Query Dasar
+    $query = Order::where('user_id', $userId)
+        ->with('product')
+        ->latest();
 
-        $status = $request->get('status_pembayaran', 'All');
-
-        $query = Order::where('user_id', $userId)
-            ->with('product')
-            ->latest();
-
-        if ($status !== 'All' && isset($statusMap[$status])) {
-            $query->where(
-                $statusMap[$status]['field'],
-                $statusMap[$status]['value']
-            );
-        }
-
-        $orders = $query->paginate(10)->withQueryString();
-
-
-        return view('orders.index', compact('orders', 'statusCounts'));
+    // --- LOGIKA FILTERING YANG DIPERBAIKI ---
+    if ($currentStatus === 'menunggu_pembayaran') {
+        // Tampilkan yang belum bayar, TAPI jangan tampilkan yang sudah dibatalkan
+        $query->where('status_pembayaran', 'menunggu_pembayaran')
+              ->where('status_pesanan', '!=', 'dibatalkan');
+              
+    } elseif ($currentStatus === 'dibayar') {
+        $query->where('status_pesanan', 'menunggu_konfirmasi');
+        
+    } elseif ($currentStatus === 'diproses') {
+        $query->where('status_pesanan', 'diproses');
+        
+    } elseif ($currentStatus === 'selesai') {
+        $query->where('status_pesanan', 'selesai');
+        
+    } elseif ($currentStatus === 'dibatalkan') {
+        $query->where('status_pesanan', 'dibatalkan');
     }
+
+    $orders = $query->paginate(10)->withQueryString();
+
+    // --- MENGHITUNG JUMLAH (BADGE) ---
+    // Kita clone query dasar user agar tidak mereset filter
+    $baseCount = Order::where('user_id', $userId);
+    
+    $statusCounts = [
+        'All' => (clone $baseCount)->count(),
+        
+        // Perbaikan logika hitung 'Belum Bayar': Kecualikan yang batal
+        'menunggu_pembayaran' => (clone $baseCount)
+            ->where('status_pembayaran', 'menunggu_pembayaran')
+            ->where('status_pesanan', '!=', 'dibatalkan')
+            ->count(),
+            
+        'dibayar' => (clone $baseCount)->where('status_pesanan', 'menunggu_konfirmasi')->count(),
+        'diproses' => (clone $baseCount)->where('status_pesanan', 'diproses')->count(),
+        'selesai' => (clone $baseCount)->where('status_pesanan', 'selesai')->count(),
+        'dibatalkan' => (clone $baseCount)->where('status_pesanan', 'dibatalkan')->count(),
+    ];
+
+    return view('orders.index', compact('orders', 'statusCounts', 'currentStatus'));
+}
 
     /**
      * Form pemesanan produk
