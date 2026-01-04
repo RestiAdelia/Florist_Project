@@ -9,6 +9,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [LandingController::class, 'index'])->name('landing');
@@ -18,11 +19,18 @@ Route::get('/cara-pemesanan', function () {
     return view('cara-pemesanan');
 });
 
+Route::get('/test-email', function () {
+    $order = \App\Models\Order::latest()->first();
+    Mail::to('test@email.com')
+        ->send(new \App\Mail\PaymentSuccessAdmin($order));
+
+    return 'EMAIL DICOBA';
+});
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/dashboard', [AuthenticatedSessionController::class, 'adminDashboard'])
         ->name('dashboard');
-     
+
 
     Route::resource('produk', ProductController::class);
     Route::resource('kategori', KategoriController::class);
