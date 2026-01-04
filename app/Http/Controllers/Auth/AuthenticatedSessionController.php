@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -53,17 +54,20 @@ $pendapatanBulanIni = Order::where('status_pembayaran', 'dibayar')
     ->whereYear('updated_at', now()->year)
     ->sum('total_harga');
 
+ $startDate = Carbon::today();
+    $endDate   = Carbon::today()->addDays(7);
 
-    // $pendapatanBulanIni = Order::where('status_pembayaran', 'dibayar')
-    //     ->where('status_pesanan', 'selesai')
-    //     ->whereMonth('created_at', now()->month)
-    //     ->whereYear('created_at', now()->year)
-    //     ->sum('total_harga');
+    $urgentOrders = Order::with('product')
+        ->whereBetween('tanggal_pengiriman', [$startDate, $endDate])
+        ->whereNotIn('status_pesanan', ['selesai', 'dibatalkan'])
+        ->orderBy('tanggal_pengiriman', 'asc')
+        ->get();
+
 
     return view('dashboard', compact(
         'totalProduk',
         'pesananBaru',
-        // 'totalPelanggan',
+        'urgentOrders',
         'pendapatanBulanIni',
         'totalOrderSelesai'
     ));

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\OrderAdminController;
@@ -17,14 +18,12 @@ Route::get('/cara-pemesanan', function () {
     return view('cara-pemesanan');
 });
 
-Route::get('/login-page', function () {
-    return view('auth.login');
-})->name('login.page');
-Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.show');
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/dashboard', [AuthenticatedSessionController::class, 'adminDashboard'])
         ->name('dashboard');
+     
+
     Route::resource('produk', ProductController::class);
     Route::resource('kategori', KategoriController::class);
     Route::get('/admin/orders', [OrderAdminController::class, 'index'])->name('admin.orders.index');
@@ -39,9 +38,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/laporan', [ReportController::class, 'index'])->name('admin.laporan.index');
     Route::get('/admin/laporan/export-pdf', [ReportController::class, 'exportPdf'])->name('admin.laporan.pdf');
 });
+Route::get('/login-page', function () {
+    return view('auth.login');
+})->name('login.page');
+Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.show');
 
 Route::middleware(['auth'])->group(function () {
-      Route::get('/user/dashboard', [AuthenticatedSessionController::class, 'userDashboard'])
+    Route::get('/user/dashboard', [AuthenticatedSessionController::class, 'userDashboard'])
         ->name('user.dashboard');
     Route::get('/shop/{category?}', [ProductController::class, 'katalog'])->name('shop');
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
@@ -63,7 +66,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/edit', [ProfileController::class, 'edit'])
         ->name('profile.edit');
 
-   
+
     Route::patch('/profile', [ProfileController::class, 'update'])
         ->name('profile.update');
 

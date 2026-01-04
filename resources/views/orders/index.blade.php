@@ -7,7 +7,6 @@
         </h1>
 
         @php
-            // Konfigurasi Warna & Label agar konsisten
             $statusSettings = [
                 'menunggu_pembayaran' => ['label' => 'Belum Bayar', 'class' => 'bg-yellow-100 text-yellow-800'],
                 'dibayar'             => ['label' => 'Menunggu Konfirmasi', 'class' => 'bg-orange-100 text-orange-700'],
@@ -15,13 +14,14 @@
                 'selesai'             => ['label' => 'Selesai', 'class' => 'bg-green-100 text-green-800'],
                 'dibatalkan'          => ['label' => 'Dibatalkan', 'class' => 'bg-red-100 text-red-800'],
             ];
-
-            $activeStatus = request('status_pembayaran') ?? 'All';
+            
+            // Ambil dari variabel controller yang baru dikirim, atau fallback ke request
+            $activeStatus = $currentStatus ?? request('status', 'All');
         @endphp
 
-        {{-- NAVIGASI TAB (Style Tetap Sama) --}}
+        {{-- NAVIGASI TAB --}}
         <div class="bg-white rounded-lg shadow-sm mb-6 overflow-x-auto border border-gray-100">
-            <nav class="flex justify-between min-w-max" id="status-tabs">
+            <nav class="flex justify-between min-w-max">
                 @php 
                     $navStatuses = ['All' => 'Semua'] + array_combine(array_keys($statusSettings), array_column($statusSettings, 'label'));
                 @endphp
@@ -35,7 +35,8 @@
                             : 'border-b-2 border-transparent text-gray-700 hover:text-teal-600 hover:bg-gray-50';
                     @endphp
 
-                    <a href="{{ route('orders.index', ['status_pembayaran' => $key]) }}"
+                    {{-- Perhatikan: Parameter sekarang bernama 'status', bukan 'status_pembayaran' --}}
+                    <a href="{{ route('orders.index', ['status' => $key]) }}"
                         class="tab-button flex-1 text-center py-3 text-sm whitespace-nowrap transition duration-200 {{ $linkClasses }}">
                         {{ $label }}
                         @if ($count > 0)
@@ -51,33 +52,43 @@
 
         @if ($orders->isEmpty())
             <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg shadow-sm">
-                <p class="text-yellow-700 font-medium">Data pesanan belum ada.</p>
+                <p class="text-yellow-700 font-medium">Data pesanan belum ada untuk kategori ini.</p>
             </div>
         @else
             <div class="space-y-6">
                 @foreach ($orders as $order)
                     @php
-                        // Logika menentukan key status mana yang dipakai untuk warna badge
-                        $st = 'menunggu_pembayaran'; 
-                        if ($order->status_pembayaran === 'dibatalkan') $st = 'dibatalkan';
-                        elseif ($order->status_pembayaran === 'menunggu_pembayaran') $st = 'menunggu_pembayaran';
-                        elseif ($order->status_pesanan === 'menunggu_konfirmasi') $st = 'dibayar';
-                        elseif ($order->status_pesanan === 'diproses') $st = 'diproses';
-                        elseif ($order->status_pesanan === 'selesai' || $order->status_pembayaran === 'selesai') $st = 'selesai';
+                        // LOGIKA PRIORITAS STATUS (Penting!)
+                        // Urutan if-else ini menentukan warna apa yang muncul
+                        
+                        $st = 'menunggu_pembayaran'; // Default
+
+                        if ($order->status_pesanan === 'dibatalkan') {
+                            $st = 'dibatalkan';
+                        } elseif ($order->status_pesanan === 'selesai') {
+                            $st = 'selesai';
+                        } elseif ($order->status_pesanan === 'diproses' || $order->status_pesanan === 'dikirim') {
+                            $st = 'diproses';
+                        } elseif ($order->status_pesanan === 'menunggu_konfirmasi') {
+                            $st = 'dibayar';
+                        } elseif ($order->status_pembayaran === 'menunggu_pembayaran') {
+                            $st = 'menunggu_pembayaran';
+                        }
 
                         $currentStatus = $statusSettings[$st] ?? ['label' => $st, 'class' => 'bg-gray-100 text-gray-800'];
                     @endphp
 
                     <div class="bg-white shadow-lg rounded-xl p-6 border border-gray-200">
                         <div class="flex justify-between items-center border-b pb-2 mb-4">
-                            <h2 class="font-bold text-gray-800 text-base">Pesanan</h2>
-                            {{-- BADGE DENGAN WARNA DINAMIS --}}
+                            <h2 class="font-bold text-gray-800 text-base">Pesanan 
+                                
+                            </h2>
                             <span class="px-3 py-1 text-xs font-semibold rounded-full {{ $currentStatus['class'] }}">
                                 {{ $currentStatus['label'] }}
                             </span>
                         </div>
 
-                        {{-- Baris 2: Detail Produk (Style Tetap Sama) --}}
+                        {{-- Detail Produk --}}
                         @if ($order->product)
                             <div class="flex items-center space-x-4">
                                 <img src="{{ asset('storage/' . $order->product->gambar) }}"
@@ -90,18 +101,21 @@
                                     </p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-sm text-gray-500">Total Pesanan</p>
+                                    <p class="text-sm text-gray-500">Total</p>
                                     <p class="font-bold text-teal-600 text-lg">
                                         Rp {{ number_format($order->total_harga, 0, ',', '.') }}
                                     </p>
                                 </div>
                             </div>
                         @else
-                            <p class="text-red-500 italic mb-4">Detail produk tidak tersedia.</p>
+                            <p class="text-red-500 italic mb-4">Produk tidak tersedia.</p>
                         @endif
 
                         <div class="mt-4 flex justify-end space-x-3 border-t pt-4">
-                            @if ($order->status_pembayaran === 'menunggu_pembayaran')
+                            
+                            {{-- LOGIKA TOMBOL BAYAR DIPERBAIKI --}}
+                            {{-- Hanya muncul jika status pembayaran menunggu DAN pesanan TIDAK dibatalkan --}}
+                            @if ($order->status_pembayaran === 'menunggu_pembayaran' && $order->status_pesanan !== 'dibatalkan')
                                 <a href="{{ route('orders.pay', $order->id) }}"
                                     class="bg-teal-600 hover:bg-teal-700 text-white py-2 px-4 rounded-lg text-sm font-semibold transition">
                                     Lanjut Bayar
@@ -109,7 +123,7 @@
                             @endif
 
                             @if ($order->status_pesanan === 'menunggu_konfirmasi')
-                                <span class="text-sm text-gray-500 py-2 px-4">Pembayaran diterima, menunggu validasi admin.</span>
+                                <span class="text-sm text-gray-500 py-2 px-4 self-center">Menunggu validasi admin.</span>
                             @endif
 
                             <a href="{{ route('orders.show', $order->id) }}"

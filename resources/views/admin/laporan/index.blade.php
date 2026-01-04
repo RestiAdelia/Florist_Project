@@ -1,166 +1,120 @@
 <x-app-layout>
-    <x-slot:title> Laporan Penjualan</x-slot:title>
-    <div class="h-screen bg-gray-50 pt-2 flex flex-col">
-        <div class="flex-1 overflow-hidden flex flex-col px-4 pb-4 max-w-7xl mx-auto w-full">
-            <div class="flex flex-col md:flex-row md:items-center justify-between py-4 gap-3 flex-shrink-0">
-                <div>
-                    <p class="text-xs text-gray-500 font-medium mt-1">Pantau performa bisnis Aurora Florist Anda.</p>
+    <x-slot:title>Dashboard</x-slot:title>
+
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">Ringkasan Dashboard</h1>
+
+            @if(isset($urgentOrders) && $urgentOrders->count() > 0)
+                <div class="mb-8 bg-yellow-50 border-l-4 border-yellow-500 p-5 rounded-md shadow-sm">
+                    <div class="w-full">
+                        <h3 class="text-lg font-bold text-yellow-800">
+                            ⚠️ Perhatian: {{ $urgentOrders->count() }} Pesanan Perlu Dikirim Minggu Ini!
+                        </h3>
+                        <p class="text-sm text-yellow-700 mb-3">
+                            Berikut adalah daftar pesanan aktif dengan jadwal pengiriman dalam 7 hari ke depan.
+                        </p>
+
+                        <div class="bg-white rounded-lg border border-yellow-200 overflow-hidden shadow-sm">
+                            <ul class="divide-y divide-yellow-100">
+                                @foreach($urgentOrders as $order)
+                                    <li class="p-4 hover:bg-yellow-50 transition flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                                        
+                                        {{-- Kolom Kiri: Info Pesanan --}}
+                                        <div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-bold text-gray-800 text-lg">Order #{{ $order->id }}</span>
+                                                
+                                                {{-- Badge Kedip jika Hari Ini --}}
+                                                @if($order->tanggal_pengiriman == date('Y-m-d'))
+                                                    <span class="px-2 py-0.5 text-xs font-bold bg-red-100 text-red-700 rounded-full animate-pulse">
+                                                        HARI INI!
+                                                    </span>
+                                                @endif
+                                            </div>
+                                            
+                                            <p class="text-sm text-gray-600 font-medium">
+                                                {{ $order->product->nama ?? 'Produk dihapus' }}
+                                            </p>
+                                            
+                                            {{-- Alamat (Tanpa Icon) --}}
+                                            <p class="text-xs text-gray-500 mt-1">
+                                                <span class="font-semibold text-gray-600">Tujuan:</span> 
+                                                {{ Str::limit($order->alamat, 60) }}
+                                            </p>
+                                        </div>
+
+                                        {{-- Kolom Kanan: Tanggal & Tombol --}}
+                                        <div class="text-left sm:text-right">
+                                            <p class="text-sm text-gray-500 mb-1">Jadwal Kirim:</p>
+                                            
+                                            {{-- Warna Badge: Merah (Hari ini), Biru (Besok/Lusa) --}}
+                                            <span class="inline-block px-3 py-1 text-sm font-bold rounded-lg 
+                                                {{ $order->tanggal_pengiriman == date('Y-m-d') ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800' }}">
+                                                {{ \Carbon\Carbon::parse($order->tanggal_pengiriman)->translatedFormat('d M Y') }}
+                                            </span>
+                                            
+                                            <div class="mt-2">
+                                                <a href="{{ url('/admin/orders/' . $order->id) }}" class="text-sm font-semibold text-teal-600 hover:text-teal-800 underline">
+                                                    Lihat Detail
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <a href="{{ route('admin.laporan.pdf', ['start_date' => $startDate, 'end_date' => $endDate]) }}"
-                        target="_blank"
-                        class="flex items-center px-3 py-2 bg-teal-600 text-white rounded-xl font-medium text-[11px] hover:bg-teal-700 transition-all shadow-md shadow-teal-100">
-                        <i class="bi bi-printer mr-1.5 text-sm"></i> Cetak PDF
-                    </a>
+            @endif
+            {{-- ========================================================== --}}
+
+
+            {{-- Grid Kartu Statistik --}}
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+
+                {{-- Total Produk --}}
+                <div class="bg-white overflow-hidden shadow-lg rounded-lg p-6 flex items-center justify-between hover:shadow-xl hover:scale-[1.02] transition">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Produk</p>
+                         <p class="text-4xl font-extrabold text-teal-600 mt-1">{{ $totalProduk }}</p>
+                    </div>
+                    {{-- Icon dihapus sesuai permintaan 'tanpa icon' di area notif, tapi ini area statistik (opsional dihapus) --}}
+                    {{-- <i class="bi bi-boxes text-4xl text-teal-400"></i> --}}
                 </div>
+
+                {{-- Pesanan Baru --}}
+                <div class="bg-white overflow-hidden shadow-lg rounded-lg p-6 flex items-center justify-between hover:shadow-xl hover:scale-[1.02] transition">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Belum Konfirmasi</p>
+                        <p class="text-4xl font-extrabold text-emerald-600 mt-1">{{ $pesananBaru }}</p>
+                    </div>
+                    {{-- <i class="bi bi-cart-check-fill text-4xl text-emerald-400"></i> --}}
+                </div>
+
+                {{-- Total Order Selesai --}}
+                <div class="bg-white overflow-hidden shadow-lg rounded-lg p-6 flex items-center justify-between hover:shadow-xl hover:scale-[1.02] transition">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Order Selesai</p>
+                        <p class="text-4xl font-extrabold text-indigo-600 mt-1">{{ $totalOrderSelesai }}</p>
+                    </div>
+                    {{-- <i class="bi bi-people-fill text-4xl text-indigo-400"></i> --}}
+                </div>
+
+                {{-- Pendapatan Bulan Ini --}}
+                <div class="bg-white overflow-hidden shadow-lg rounded-lg p-6 flex items-center justify-between hover:shadow-xl hover:scale-[1.02] transition">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Pendapatan (Bulan Ini)</p>
+                        <p class="text-2xl font-extrabold text-yellow-600 mt-2">
+                            Rp {{ number_format($pendapatanBulanIni, 0, ',', '.') }}
+                        </p>
+                    </div>
+                    {{-- <i class="bi bi-cash-stack text-4xl text-yellow-400"></i> --}}
+                </div>
+
             </div>
 
-            <div class="flex-shrink-0 space-y-3 mb-4">
-                <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100">
-                    <form action="" method="GET" class="flex flex-wrap items-end gap-3">
-                        <div class="flex-1 min-w-[120px]">
-                            <label
-                                class="block text-[9px] font-medium text-gray-400 uppercase tracking-widest mb-1 ml-1">
-                                Dari Tanggal
-                            </label>
-                            <input type="date" name="start_date" value="{{ $startDate }}"
-                                class="w-full px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-lg focus:ring-2 focus:ring-teal-500/20 focus:bg-white focus:border-teal-500 outline-none transition-all text-xs text-gray-600 font-medium">
-                        </div>
-                        <div class="flex-1 min-w-[120px]">
-                            <label
-                                class="block text-[9px] font-medium text-gray-400 uppercase tracking-widest mb-1 ml-1">
-                                Sampai Tanggal
-                            </label>
-                            <input type="date" name="end_date" value="{{ $endDate }}"
-                                class="w-full px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-lg focus:ring-2 focus:ring-teal-500/20 focus:bg-white focus:border-teal-500 outline-none transition-all text-xs text-gray-600 font-medium">
-                        </div>
-                        <button type="submit"
-                            class="px-4 py-1.5 bg-gray-800 text-white rounded-lg font-medium text-xs hover:bg-black transition-all h-[34px]">
-                            Filter
-                        </button>
-                    </form>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div class="bg-white p-2.5 rounded-xl border border-gray-100 shadow-sm flex items-center">
-                        <div
-                            class="w-8 h-8 bg-teal-50 text-teal-600 rounded-lg flex items-center justify-center mr-2.5 flex-shrink-0">
-                            <i class="bi bi-currency-dollar text-base"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <p class="text-[9px] font-medium text-gray-400 uppercase tracking-widest truncate">
-                                Pendapatan</p>
-                            <h3 class="text-sm font-bold text-gray-800 truncate">
-                                Rp {{ number_format($totalPendapatan, 0, ',', '.') }}
-                            </h3>
-                        </div>
-                    </div>
-                    <div class="bg-white p-2.5 rounded-xl border border-gray-100 shadow-sm flex items-center">
-                        <div
-                            class="w-8 h-8 bg-orange-50 text-orange-600 rounded-lg flex items-center justify-center mr-2.5 flex-shrink-0">
-                            <i class="bi bi-bag-check text-base"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <p class="text-[9px] font-medium text-gray-400 uppercase tracking-widest truncate">Selesai
-                            </p>
-                            <h3 class="text-sm font-bold text-gray-800 truncate">{{ $totalPesanan }}</h3>
-                        </div>
-                    </div>
-                    <div class="bg-white p-2.5 rounded-xl border border-gray-100 shadow-sm flex items-center">
-                        <div
-                            class="w-8 h-8 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center mr-2.5 flex-shrink-0">
-                            <i class="bi bi-people text-base"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <p class="text-[9px] font-medium text-gray-400 uppercase tracking-widest truncate">Pelanggan
-                            </p>
-                            <h3 class="text-sm font-bold text-gray-800 truncate">
-                                {{ $orders->unique('user_id')->count() }}
-                            </h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
-                <div class="overflow-y-auto overflow-x-auto flex-1 custom-scrollbar">
-                    <table class="w-full text-left border-separate border-spacing-0">
-                        <thead class="sticky top-0 z-10">
-                            <tr class="bg-gray-50">
-                                <th
-                                    class="px-6 py-4 text-[10px] font-medium text-gray-400 uppercase tracking-widest border-b border-gray-100">
-                                    NO</th>
-                                <th
-                                    class="px-6 py-4 text-[10px] font-medium text-gray-400 uppercase tracking-widest border-b border-gray-100">
-                                    Pelanggan</th>
-                                <th
-                                    class="px-6 py-4 text-[10px] font-medium text-gray-400 uppercase tracking-widest border-b border-gray-100">
-                                    Produk</th>
-                                <th
-                                    class="px-6 py-4 text-[10px] font-medium text-gray-400 uppercase tracking-widest border-b border-gray-100 text-right">
-                                    Total</th>
-                                <th
-                                    class="px-6 py-4 text-[10px] font-medium text-gray-400 uppercase tracking-widest border-b border-gray-100 text-center">
-                                    Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-50">
-                            @forelse ($orders as $order)
-                                <tr class="hover:bg-gray-50/50 transition-colors">
-                                    <td class="px-6 py-4 text-sm font-medium text-teal-600 whitespace-nowrap">
-                                        {{ $loop->iteration }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-700">{{ $order->user->name }}</div>
-                                        <div class="text-[11px] text-gray-400 font-medium">{{ $order->user->email }}
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm font-medium text-gray-600 whitespace-nowrap">
-                                        {{ $order->product->nama }}
-                                    </td>
-                                    <td class="px-6 py-4 text-sm font-bold text-gray-800 text-right whitespace-nowrap">
-                                        Rp {{ number_format($order->total_harga, 0, ',', '.') }}
-                                    </td>
-                                    <td class="px-6 py-4 text-center whitespace-nowrap">
-                                        <span
-                                            class="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                                            {{ $order->status_pembayaran }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="px-6 py-20 text-center">
-                                        <div class="flex flex-col items-center">
-                                            <i class="bi bi-inbox text-5xl text-gray-200 mb-3"></i>
-                                            <p class="text-gray-400 font-medium text-sm">Tidak ada data pesanan pada
-                                                periode ini.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
     </div>
-    <style>
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #e2e8f0;
-            border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #cbd5e1;
-        }
-    </style>
 </x-app-layout>
