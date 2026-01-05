@@ -1,118 +1,124 @@
 <x-app-layout>
-    <x-slot:title>Dashboard</x-slot:title>
+    <x-slot:title>Laporan Penjualan</x-slot:title>
 
-    <div class="py-12">
+    <div class="py-6 bg-gray-50 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            
+            {{-- Header Compact --}}
+            <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900">Laporan Penjualan</h2>
+                    <p class="text-xs text-gray-500">Data per halaman: 4 Transaksi</p>
+                </div>
+                <div class="mt-2 sm:mt-0 px-3 py-1 bg-white rounded border border-gray-200 text-xs text-gray-600">
+                    <span class="font-semibold">Hari ini:</span> {{ \Carbon\Carbon::now()->translatedFormat('d M Y') }}
+                </div>
+            </div>
 
-            <h1 class="text-3xl font-bold text-gray-800 mb-6">Ringkasan Dashboard</h1>
-
-            @if(isset($urgentOrders) && $urgentOrders->count() > 0)
-                <div class="mb-8 bg-yellow-50 border-l-4 border-yellow-500 p-5 rounded-md shadow-sm">
-                    <div class="w-full">
-                        <h3 class="text-lg font-bold text-yellow-800">
-                            ⚠️ Perhatian: {{ $urgentOrders->count() }} Pesanan Perlu Dikirim Minggu Ini!
-                        </h3>
-                        <p class="text-sm text-yellow-700 mb-3">
-                            Berikut adalah daftar pesanan aktif dengan jadwal pengiriman dalam 7 hari ke depan.
-                        </p>
-
-                        <div class="bg-white rounded-lg border border-yellow-200 overflow-hidden shadow-sm">
-                            <ul class="divide-y divide-yellow-100">
-                                @foreach($urgentOrders as $order)
-                                    <li class="p-4 hover:bg-yellow-50 transition flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-                                        
-                                        {{-- Kolom Kiri: Info Pesanan --}}
-                                        <div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="font-bold text-gray-800 text-lg">Order #{{ $order->id }}</span>
-                                                
-                                                {{-- Badge Kedip jika Hari Ini --}}
-                                                @if($order->tanggal_pengiriman == date('Y-m-d'))
-                                                    <span class="px-2 py-0.5 text-xs font-bold bg-red-100 text-red-700 rounded-full animate-pulse">
-                                                        HARI INI!
-                                                    </span>
-                                                @endif
-                                            </div>
-                                            
-                                            <p class="text-sm text-gray-600 font-medium">
-                                                {{ $order->product->nama ?? 'Produk dihapus' }}
-                                            </p>
-                                            
-                                            {{-- Alamat (Tanpa Icon) --}}
-                                            <p class="text-xs text-gray-500 mt-1">
-                                                <span class="font-semibold text-gray-600">Tujuan:</span> 
-                                                {{ Str::limit($order->alamat, 60) }}
-                                            </p>
-                                        </div>
-
-                                        {{-- Kolom Kanan: Tanggal & Tombol --}}
-                                        <div class="text-left sm:text-right">
-                                            <p class="text-sm text-gray-500 mb-1">Jadwal Kirim:</p>
-                                            
-                                            {{-- Warna Badge: Merah (Hari ini), Biru (Besok/Lusa) --}}
-                                            <span class="inline-block px-3 py-1 text-sm font-bold rounded-lg 
-                                                {{ $order->tanggal_pengiriman == date('Y-m-d') ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800' }}">
-                                                {{ \Carbon\Carbon::parse($order->tanggal_pengiriman)->translatedFormat('d M Y') }}
-                                            </span>
-                                            
-                                            <div class="mt-2">
-                                                <a href="{{ url('/admin/orders/' . $order->id) }}" class="text-sm font-semibold text-teal-600 hover:text-teal-800 underline">
-                                                    Lihat Detail
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </li>
-                                @endforeach
-                            </ul>
+            {{-- FILTER & EXPORT --}}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+                <div class="flex flex-col lg:flex-row justify-between items-end gap-4">
+                    <form action="{{ route('admin.laporan.index') }}" method="GET" class="w-full lg:w-auto flex flex-col md:flex-row gap-3 items-end flex-grow">
+                        <div class="w-full md:w-auto">
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Dari</label>
+                            <input type="date" name="start_date" value="{{ $startDate }}" class="w-full md:w-32 rounded border-gray-300 text-xs py-1.5 focus:ring-indigo-500 focus:border-indigo-500">
                         </div>
-                    </div>
+                        <div class="w-full md:w-auto">
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Sampai</label>
+                            <input type="date" name="end_date" value="{{ $endDate }}" class="w-full md:w-32 rounded border-gray-300 text-xs py-1.5 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <button type="submit" class="px-4 py-1.5 bg-indigo-600 text-white font-medium text-xs rounded hover:bg-indigo-700 transition flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                            Filter
+                        </button>
+                    </form>
+
+                    <a href="{{ route('admin.laporan.pdf', ['start_date' => $startDate, 'end_date' => $endDate]) }}" target="_blank" class="px-4 py-1.5 bg-red-50 text-red-700 font-medium text-xs rounded hover:bg-red-100 border border-red-200 transition flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        PDF
+                    </a>
                 </div>
-            @endif
-            {{-- ========================================================== --}}
+            </div>
 
+            {{-- STATISTIK MINI --}}
+            <div class="grid grid-cols-3 gap-3 mb-4">
+                <div class="bg-white rounded p-3 shadow-sm border border-gray-200">
+                    <p class="text-[10px] text-gray-400 uppercase font-bold">Total Pendapatan</p>
+                    <p class="text-sm font-bold text-emerald-600">Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</p>
+                </div>
+                <div class="bg-white rounded p-3 shadow-sm border border-gray-200">
+                    <p class="text-[10px] text-gray-400 uppercase font-bold">Total Transaksi</p>
+                    <p class="text-sm font-bold text-blue-600">{{ $totalPesanan }}</p>
+                </div>
+                <div class="bg-white rounded p-3 shadow-sm border border-gray-200">
+                    <p class="text-[10px] text-gray-400 uppercase font-bold">Total Pelanggan</p>
+                    <p class="text-sm font-bold text-indigo-600">{{ $totalPelanggan }}</p>
+                </div>
+            </div>
 
-            {{-- Grid Kartu Statistik --}}
-            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-
-                {{-- Total Produk --}}
-                <div class="bg-white overflow-hidden shadow-lg rounded-lg p-6 flex items-center justify-between hover:shadow-xl hover:scale-[1.02] transition">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Produk</p>
-                         <p class="text-4xl font-extrabold text-teal-600 mt-1">{{ $totalProduk }}</p>
-                    </div>
-                    {{-- Icon dihapus sesuai permintaan 'tanpa icon' di area notif, tapi ini area statistik (opsional dihapus) --}}
-                    {{-- <i class="bi bi-boxes text-4xl text-teal-400"></i> --}}
+            {{-- TABEL DATA (4 baris per halaman) --}}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
+                <div class="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+                    <h3 class="text-xs font-bold text-gray-800">Rincian Transaksi</h3>
+                    <span class="text-[10px] text-gray-500">Menampilkan {{ $orders->count() }} dari {{ $orders->total() }} data</span>
+                </div>
+                
+                <div class="overflow-x-auto flex-grow">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider w-10">No</th>
+                                <th class="px-4 py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                <th class="px-4 py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Pelanggan</th>
+                                <th class="px-4 py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Produk</th>
+                                <th class="px-4 py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total</th>
+                                <th class="px-4 py-2 text-center text-[10px] font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse($orders as $index => $order)
+                                <tr class="hover:bg-gray-50 transition">
+                                    <td class="px-4 py-2 text-xs text-gray-500">  
+                                        {{ $orders->firstItem() + $index }}
+                                    </td>
+                                    <td class="px-4 py-2 whitespace-nowrap">
+                                        <div class="text-xs font-medium text-gray-900">{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</div>
+                                        <div class="text-[10px] text-gray-500">{{ \Carbon\Carbon::parse($order->created_at)->format('H:i') }} WIB</div>
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        <div class="text-xs text-gray-900 font-medium">{{ $order->user->name ?? 'Guest' }}</div>
+                                        <div class="text-[10px] text-gray-500 truncate max-w-[100px]">{{ $order->user->email ?? '-' }}</div>
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        <div class="text-xs text-gray-900 truncate max-w-[120px]" title="{{ $order->product->nama ?? '' }}">
+                                            {{ $order->product->nama ?? '-' }}
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-2 whitespace-nowrap font-bold text-xs text-emerald-600">
+                                        Rp {{ number_format($order->total_harga, 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-center">
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-800 border border-green-200">
+                                            {{ ucfirst($order->status_pembayaran) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="px-6 py-8 text-center text-gray-500 text-xs">
+                                        Tidak ada data transaksi.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
 
-                {{-- Pesanan Baru --}}
-                <div class="bg-white overflow-hidden shadow-lg rounded-lg p-6 flex items-center justify-between hover:shadow-xl hover:scale-[1.02] transition">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Belum Konfirmasi</p>
-                        <p class="text-4xl font-extrabold text-emerald-600 mt-1">{{ $pesananBaru }}</p>
-                    </div>
-                    {{-- <i class="bi bi-cart-check-fill text-4xl text-emerald-400"></i> --}}
+                {{-- SECTION PAGINATION --}}
+                <div class="px-4 py-3 border-t border-gray-200 bg-gray-50">
+                    {{-- Ini akan memunculkan tombol Previous/Next otomatis dari Laravel --}}
+                    {{ $orders->links() }} 
                 </div>
-
-                {{-- Total Order Selesai --}}
-                <div class="bg-white overflow-hidden shadow-lg rounded-lg p-6 flex items-center justify-between hover:shadow-xl hover:scale-[1.02] transition">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Order Selesai</p>
-                        <p class="text-4xl font-extrabold text-indigo-600 mt-1">{{ $totalOrderSelesai }}</p>
-                    </div>
-                    {{-- <i class="bi bi-people-fill text-4xl text-indigo-400"></i> --}}
-                </div>
-
-                {{-- Pendapatan Bulan Ini --}}
-                <div class="bg-white overflow-hidden shadow-lg rounded-lg p-6 flex items-center justify-between hover:shadow-xl hover:scale-[1.02] transition">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Pendapatan (Bulan Ini)</p>
-                        <p class="text-2xl font-extrabold text-yellow-600 mt-2">
-                            Rp {{ number_format($pendapatanBulanIni, 0, ',', '.') }}
-                        </p>
-                    </div>
-                    {{-- <i class="bi bi-cash-stack text-4xl text-yellow-400"></i> --}}
-                </div>
-
             </div>
 
         </div>

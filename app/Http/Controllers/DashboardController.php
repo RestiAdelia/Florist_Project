@@ -33,6 +33,7 @@ class DashboardController extends Controller
             'pesananBaru',
             'totalPelanggan',
             'pendapatanBulanIni'
+            
         ));
     }
 }

@@ -9,15 +9,29 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
-    public function index(Request $request)
+   public function index(Request $request)
     {
+        $search = $request->input('search');
+
+        // 1. Eager Load Category untuk performa
         $query = Product::with('category');
-        if ($request->has('search') && $request->search != '') {
-            $query->where('nama', 'like', '%' . $request->search . '%')
-                ->orWhere('deskripsi', 'like', '%' . $request->search . '%');
+
+        // 2. Logika Pencarian yang Lebih Aman (Grouping)
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama', 'like', '%' . $search . '%')
+                  ->orWhere('deskripsi', 'like', '%' . $search . '%')
+                  // Tambahan: Agar user bisa mencari berdasarkan nama Kategori juga
+                  ->orWhereHas('category', function($catQuery) use ($search) {
+                      $catQuery->where('nama', 'like', '%' . $search . '%');
+                  });
+            });
         }
-        $products = $query->orderBy('created_at', 'desc')->paginate(10);
-        $products->appends(['search' => $request->search]);
+
+        
+        $products = $query->latest()
+            ->paginate(4)
+            ->withQueryString();
 
         return view('produk.index', compact('products'));
     }
@@ -100,7 +114,7 @@ class ProductController extends Controller
     }
     public function katalog(Request $request)
     {
-        $kategoriId = $request->query('kategori'); // ambil dari query string ?kategori=1
+        $kategoriId = $request->query('kategori'); 
 
         $categories = Category::all();
 

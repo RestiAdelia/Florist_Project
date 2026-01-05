@@ -7,29 +7,45 @@ use Illuminate\Http\Request;
 
 class OrderAdminController extends Controller
 {
-    /**
-     * Tampilkan semua pesanan (tanpa filter) dengan pagination
-     */
-    public function index()
+   
+    public function index(Request $request)
     {
-        $orders = Order::with(['product', 'user'])
+        // 1. Ambil kata kunci pencarian
+        $search = $request->input('search');
 
-            ->where('status_pesanan', '!=', 'menunggu_konfirmasi',)
-            ->where('status_pembayaran', 'dibayar')     // hanya pesanan yang sudah dibayar
-            ->orderBy('tanggal_pengiriman', 'asc')
-            ->paginate(10);
+        // 2. Query Dasar (Filter Wajib Anda)
+        $query = Order::with(['product', 'user'])
+            ->where('status_pesanan', '!=', 'menunggu_konfirmasi')
+            ->where('status_pembayaran', 'dibayar');
+
+        // 3. Logika Pencarian (Jika ada input search)
+        $query->when($search, function ($q) use ($search) {
+            $q->where(function ($subQuery) use ($search) {
+                // Cari berdasarkan Nama User
+                $subQuery->whereHas('user', function ($userQuery) use ($search) {
+                    $userQuery->where('name', 'like', "%{$search}%");
+                })
+                // ATAU Cari berdasarkan Nama Produk
+                ->orWhereHas('product', function ($prodQuery) use ($search) {
+                    $prodQuery->where('nama', 'like', "%{$search}%");
+                })
+                // ATAU Cari berdasarkan Jenis Ucapan / No Telepon
+                ->orWhere('jenis_ucapan', 'like', "%{$search}%")
+                ->orWhere('no_telepon', 'like', "%{$search}%");
+            });
+        });
+
+        // 4. Urutkan dan Paginate
+        $orders = $query->orderBy('tanggal_pengiriman', 'asc')
+            ->paginate(5)     
+            ->withQueryString(); 
 
         return view('admin.orders.index', compact('orders'));
-    }
+    }   
 
     public function indexKonfirmasi()
     {
-        // // Ambil semua data pesanan + relasi user & product
-        // $orders = Order::with(['product', 'user'])
-        //     ->orderByDesc('created_at')
-        //     ->paginate(10); // tampilkan 10 data per halaman
-
-        // return view('admin.orders.index', compact('orders'));
+       
         $orders = Order::where('status_pesanan', '!=', 'selesai')
             ->latest()
             ->get();

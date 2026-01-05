@@ -9,9 +9,9 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        $user = $request->user(); // ✅ PALING AMAN
+        $user = $request->user(); 
 
-        if ($user->email !== 'admin@gmail.com') {
+        if ($user->role !== 'admin') {
             abort(403, 'Unauthorized');
         }
 

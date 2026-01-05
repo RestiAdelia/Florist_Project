@@ -38,67 +38,80 @@ class AuthenticatedSessionController extends Controller
         }
         return redirect()->route('user.dashboard');
     }
-  public function adminDashboard()
+    public function adminDashboard()
     {
-         $totalProduk = Product::count();
+        $totalProduk = Product::count();
 
-    $pesananBaru = Order::where('status_pesanan', 'menunggu_konfirmasi')->count();
+        $pesananBaru = Order::where('status_pesanan', 'menunggu_konfirmasi')->count();
 
-    // Sesuaikan role pelanggan jika berbeda
-    // $totalPelanggan = User::where('role', 'user')->count();
-$totalOrderSelesai = Order::where('status_pesanan', 'selesai')->count();
+        // Sesuaikan role pelanggan jika berbeda
+        // $totalPelanggan = User::where('role', 'user')->count();
+        $totalOrderSelesai = Order::where('status_pesanan', 'selesai')->count();
 
-$pendapatanBulanIni = Order::where('status_pembayaran', 'dibayar')
-    ->where('status_pesanan', 'selesai')
-    ->whereMonth('updated_at', now()->month)
-    ->whereYear('updated_at', now()->year)
-    ->sum('total_harga');
+        $pendapatanBulanIni = Order::where('status_pembayaran', 'dibayar')
+            ->where('status_pesanan', 'selesai')
+            ->whereMonth('updated_at', now()->month)
+            ->whereYear('updated_at', now()->year)
+            ->sum('total_harga');
 
- $startDate = Carbon::today();
-    $endDate   = Carbon::today()->addDays(7);
+        $startDate = Carbon::today();
+        $endDate   = Carbon::today()->addDays(7);
 
-    $urgentOrders = Order::with('product')
-        ->whereBetween('tanggal_pengiriman', [$startDate, $endDate])
-        ->whereNotIn('status_pesanan', ['selesai', 'dibatalkan'])
-        ->orderBy('tanggal_pengiriman', 'asc')
-        ->get();
+        // $urgentOrders = Order::with('product')
+        //     ->whereBetween('tanggal_pengiriman', [$startDate, $endDate])
+        //     ->whereNotIn('status_pesanan', ['selesai', 'dibatalkan'])
+        //     ->orderBy('tanggal_pengiriman', 'asc')
+        //     ->get();
+        $urgentOrders = Order::with('product')
+            ->whereBetween('tanggal_pengiriman', [$startDate, $endDate])
+            ->whereNotIn('status_pesanan', ['selesai', 'dibatalkan'])
+            ->orderBy('tanggal_pengiriman', 'asc')
+            ->paginate(4, ['*'], 'urgent_page');
 
 
-    return view('dashboard', compact(
-        'totalProduk',
-        'pesananBaru',
-        'urgentOrders',
-        'pendapatanBulanIni',
-        'totalOrderSelesai'
-    ));
+        return view('dashboard', compact(
+            'totalProduk',
+            'pesananBaru',
+            'urgentOrders',
+            'pendapatanBulanIni',
+            'totalOrderSelesai'
+        ));
     }
 
     /**
      * User dashboard
      */
+   
+   
     public function userDashboard()
     {
-       $userId = Auth::id();
+        $userId = Auth::id();
 
-        // 1. Ambil Statistik Pesanan
+        // 1. Ambil Semua Pesanan User (sebagai Collection)
+        // Kita ambil semua dulu agar bisa dihitung statusnya tanpa query berulang ke DB
         $orders = Order::where('user_id', $userId)->get();
 
         $stats = [
-            'orders_in_process' => $orders->whereIn('status_pembayaran', ['dibayar', 'diproses'])->count(),
-            'orders_completed' => $orders->where('status_pembayaran', 'selesai')->count(),
-            'wishlist_count' => 12, // Placeholder
+            // Menghitung dari collection yang sudah diambil di atas
+            'orders_in_process' => $orders->whereIn('status_pembayaran', ['dibayar', 'diproses', 'dikirim'])->count(),
+
+            // Pastikan value 'selesai' ini ada di kolom status_pembayaran atau status_pesanan di database Anda
+            'orders_completed'  => $orders->where('status_pembayaran', 'selesai')->count(),
+
+            // PERBAIKAN: Hapus koma ganda (,,) menjadi satu koma (,)
+            'orders_count'      => $orders->count(),
         ];
 
         // 2. Ambil Riwayat Pesanan Terbaru
-        $recentOrders = Order::where('user_id', $userId)
-                              ->latest()
-                              ->limit(5)
-                              ->get();
-        
-        // --- FOKUS PERBAIKAN: PASTIKAN $stats DAN $recentOrders ADA DI SINI ---
+        // Tambahkan with('product') agar query lebih ringan saat meload nama produk di view
+        $recentOrders = Order::with('product')
+            ->where('user_id', $userId)
+            ->latest()
+            ->limit(5)
+            ->get();
+
         return view('user.dashboard', compact('stats', 'recentOrders'));
     }
-    
 
     /**
      * Destroy an authenticated session.

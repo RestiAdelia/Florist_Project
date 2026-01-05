@@ -153,4 +153,4 @@
             removeBtn.classList.add('hidden');
         }
     </script>
-w
+</x-app-layout>
